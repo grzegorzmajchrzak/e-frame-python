@@ -1,5 +1,6 @@
 import logging
 import os
+import sys
 from PIL import Image, ImageDraw, ImageFont, ExifTags
 from waveshare_epd import epd7in5_V2
 
@@ -8,16 +9,15 @@ class Display:
     DISPLAY_SIZE = (800, 480)
 
     def __init__(self):
-        # libdir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'lib')
-        # if os.path.exists(libdir):
-        #     sys.path.append(libdir)
+        libdir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'lib')
+        if os.path.exists(libdir):
+            sys.path.append(libdir)
         logging.basicConfig(level=logging.DEBUG)
 
     def show(self, file_name):
         image = self.scaled_image(file_name)
         self.draw_date(image, file_name)
-        image.save("a.jpg")
-        # self.print_epd(image)
+        self.print_epd(image)
         return True
 
     def scaled_image(self, file_name):
