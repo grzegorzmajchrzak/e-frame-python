@@ -1,9 +1,6 @@
 import logging
 import os
-import sys
-
-from PIL import Image
-
+from PIL import Image, ImageDraw, ImageFont, ExifTags
 from waveshare_epd import epd7in5_V2
 
 
@@ -11,14 +8,16 @@ class Display:
     DISPLAY_SIZE = (800, 480)
 
     def __init__(self):
-        libdir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'lib')
-        if os.path.exists(libdir):
-            sys.path.append(libdir)
+        # libdir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'lib')
+        # if os.path.exists(libdir):
+        #     sys.path.append(libdir)
         logging.basicConfig(level=logging.DEBUG)
 
     def show(self, file_name):
         image = self.scaled_image(file_name)
-        self.print_epd(image)
+        self.draw_date(image, file_name)
+        image.save("a.jpg")
+        # self.print_epd(image)
         return True
 
     def scaled_image(self, file_name):
@@ -35,6 +34,23 @@ class Display:
         result_image = Image.new('1', self.DISPLAY_SIZE, 1)
         result_image.paste(image, (w, h))
         return result_image
+
+    def draw_date(self, image, file_name):
+        exif = {
+            ExifTags.TAGS[k]: v
+            for k, v in Image.open(file_name)._getexif().items()
+            if k in ExifTags.TAGS
+        }
+        date = exif['DateTimeOriginal']
+        if not date:
+            return
+
+        date = str(date[:10]).replace(":","-")
+        path_to_font = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'waveshare_epd/Font.ttc')
+        font12 = ImageFont.truetype(path_to_font, 16)
+        draw = ImageDraw.Draw(image)
+        draw.rectangle((0,0,100,30),1)
+        draw.text((10, 10), date, font=font12, fill=0)
 
     def print_epd(self, image):
         try:

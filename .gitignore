@@ -1,2 +1,5 @@
 .idea
 __pycache__
+img
+already_printed.txt
+*.jpg
