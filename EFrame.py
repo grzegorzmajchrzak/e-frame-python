@@ -1,5 +1,6 @@
 import os
 import sys
+import random
 import Display as display
 
 
@@ -28,17 +29,22 @@ class EFrame:
             self.do_work_internal()
 
     def do_work_internal(self):
+        file_list = []
         for r, d, f in os.walk(self.path):
             for file in f:
                 if file.lower().endswith(".jpg"):
-                    if self.try_to_use(os.path.join(r, file)):
-                        print(os.path.join(r, file))
-                        return True
+                    file_name = os.path.join(r, file)
+                    if file_name not in self.already_visited_files:
+                        file_list.append(file_name)
+        if len(file_list) == 0:
+            return False
+        random.shuffle(file_list);
+        for file_name in file_list:
+            if self.try_to_use(file_name):
+                return True
         return False
 
     def try_to_use(self, fileName):
-        if fileName in self.already_visited_files:
-            return False
         if not self.display.show(fileName):
             return False
         self.mark_as_used(fileName)
