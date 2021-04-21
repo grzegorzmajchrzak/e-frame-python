@@ -16,7 +16,10 @@ class Display:
 
     def show(self, file_name):
         image = self.scaled_image(file_name)
-        self.draw_date(image, file_name)
+        try:
+            self.draw_date(image, file_name)
+        except AttributeError:
+            print("cannot read create date"+file_name)
         self.print_epd(image)
         return True
 
