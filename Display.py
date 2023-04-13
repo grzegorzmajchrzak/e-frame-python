@@ -2,11 +2,12 @@ import logging
 import os
 import sys
 from PIL import Image, ImageDraw, ImageFont, ExifTags
-from waveshare_epd import epd7in5_V2
+from IT8951.display import AutoEPDDisplay
+from IT8951 import constants
 
 
 class Display:
-    DISPLAY_SIZE = (800, 480)
+    DISPLAY_SIZE = (1200, 825)
 
     def __init__(self):
         libdir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'lib')
@@ -27,14 +28,14 @@ class Display:
         image = Image.open(file_name)
         if image.size != self.DISPLAY_SIZE:
             image.thumbnail(self.DISPLAY_SIZE, Image.ANTIALIAS)
-        if image.mode != 1:
-            image = image.convert('1')
+        if image.mode != 'L':
+            image = image.convert('L')
         if image.size == self.DISPLAY_SIZE:
             return image
 
         w = int((self.DISPLAY_SIZE[0] - image.size[0]) / 2)
         h = int((self.DISPLAY_SIZE[1] - image.size[1]) / 2)
-        result_image = Image.new('1', self.DISPLAY_SIZE, 1)
+        result_image = Image.new('L', self.DISPLAY_SIZE, 1)
         result_image.paste(image, (w, h))
         return result_image
 
@@ -49,26 +50,25 @@ class Display:
             return
 
         date = str(date[:10]).replace(":","-")
-        path_to_font = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'waveshare_epd/Font.ttc')
+        path_to_font = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'lib/Font.ttc')
         font12 = ImageFont.truetype(path_to_font, 16)
         draw = ImageDraw.Draw(image)
-        draw.rectangle((0,0,100,30),1)
+        draw.rectangle((0, 0, 100, 30), 1)
         draw.text((10, 10), date, font=font12, fill=0)
 
-    def print_epd(self, image):
+    def print_epd(self, img):
         try:
-            epd = epd7in5_V2.EPD()
-            logging.info("init and Clear")
-            epd.init()
-            epd.Clear()
+            display = AutoEPDDisplay(vcom=-1.84, rotate=None, mirror='store_true', spi_hz=24000000)
+            epd = display.epd
+            logging.info('  display size: {}x{}'.format(epd.width, epd.height))
+            display.clear()
+            display.frame_buf.paste(0xFF, box=(0, 0, display.width, display.height))
+            dims = (display.width, display.height)
+            paste_coords = [int((dims[i] - img.size[i])/2) for i in (0, 1)]  # center image
+            #    paste_coords=[0,0]
 
             logging.info("print img")
-            epd.display(epd.getbuffer(image))
-            epd.sleep()
+            display.frame_buf.paste(img, paste_coords)
+            display.draw_full(constants.DisplayModes.GC16)
         except IOError as e:
             logging.info(e)
-
-        except KeyboardInterrupt:
-            logging.info("ctrl + c:")
-            epd7in5_V2.epdconfig.module_exit()
-            exit()
