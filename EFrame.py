@@ -24,7 +24,8 @@ class EFrame:
 
         success = self.do_work_internal()
         if not success:
-            os.remove(self.CONFIG_FILE)
+            if os.path.isfile(self.CONFIG_FILE):
+                os.remove(self.CONFIG_FILE)
             self.already_visited_files = {}
             self.do_work_internal()
 
@@ -32,7 +33,7 @@ class EFrame:
         file_list = []
         for r, d, f in os.walk(self.path):
             for file in f:
-                if file.lower().endswith(".jpg"):
+                if file.lower().endswith(".jpg") or file.lower().endswith(".png"):
                     file_name = os.path.join(r, file)
                     if file_name not in self.already_visited_files:
                         file_list.append(file_name)

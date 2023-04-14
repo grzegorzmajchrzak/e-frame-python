@@ -16,6 +16,7 @@ class Display:
         logging.basicConfig(level=logging.DEBUG)
 
     def show(self, file_name):
+        print("try to show: "+file_name)
         image = self.scaled_image(file_name)
         try:
             self.draw_date(image, file_name)
@@ -53,21 +54,19 @@ class Display:
         path_to_font = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'lib/Font.ttc')
         font12 = ImageFont.truetype(path_to_font, 16)
         draw = ImageDraw.Draw(image)
-        draw.rectangle((0, 0, 100, 30), 1)
-        draw.text((10, 10), date, font=font12, fill=0)
+        draw.rectangle((20, 0, 120, 30), "white")
+        draw.text((30, 10), date, font=font12, fill=0)
 
     def print_epd(self, img):
         try:
-            display = AutoEPDDisplay(vcom=-1.84, rotate=None, mirror='store_true', spi_hz=24000000)
+            display = AutoEPDDisplay(vcom=-1.84, rotate=None, spi_hz=24000000)
             epd = display.epd
             logging.info('  display size: {}x{}'.format(epd.width, epd.height))
             display.clear()
             display.frame_buf.paste(0xFF, box=(0, 0, display.width, display.height))
             dims = (display.width, display.height)
             paste_coords = [int((dims[i] - img.size[i])/2) for i in (0, 1)]  # center image
-            #    paste_coords=[0,0]
 
-            logging.info("print img")
             display.frame_buf.paste(img, paste_coords)
             display.draw_full(constants.DisplayModes.GC16)
         except IOError as e:
