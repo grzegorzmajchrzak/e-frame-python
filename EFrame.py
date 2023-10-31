@@ -1,7 +1,9 @@
+import logging
 import os
 import sys
 import random
 import Display as display
+import ImageConverter as imageConverter
 
 
 class EFrame:
@@ -11,6 +13,7 @@ class EFrame:
 
         self.path = path
         self.display = display.Display()
+        self.imageConverter = imageConverter.ImageConverter()
 
         if os.path.isfile(self.CONFIG_FILE):
             self.already_visited_files = set(line.strip() for line in open(self.CONFIG_FILE))
@@ -19,7 +22,7 @@ class EFrame:
 
     def do_work(self):
         if not os.path.isdir(self.path):
-            print("not a directory: ", self.path)
+            logging.info("not a directory: ", self.path)
             raise
 
         success = self.do_work_internal()
@@ -46,7 +49,8 @@ class EFrame:
         return False
 
     def try_to_use(self, fileName):
-        if not self.display.show(fileName):
+        img = self.imageConverter.convert(fileName)
+        if not self.display.show(img):
             return False
         self.mark_as_used(fileName)
         return True
