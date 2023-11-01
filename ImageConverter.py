@@ -88,6 +88,8 @@ class ImageConverter:
         orientation = exif['Orientation']
         if orientation == 3:
             return image.rotate(180)
+        if orientation == 4:
+            return image.rotate(180)
         if orientation == 8:
             return image.rotate(90)
         if orientation == 6:
