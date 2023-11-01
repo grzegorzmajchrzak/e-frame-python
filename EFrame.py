@@ -42,7 +42,7 @@ class EFrame:
                         file_list.append(file_name)
         if len(file_list) == 0:
             return False
-        random.shuffle(file_list);
+        random.shuffle(file_list)
         for file_name in file_list:
             if self.try_to_use(file_name):
                 return True
