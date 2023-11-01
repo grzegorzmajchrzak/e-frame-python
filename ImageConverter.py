@@ -59,6 +59,8 @@ class ImageConverter:
 
     @staticmethod
     def draw_date(image, exif):
+        if not hasattr(exif, 'DateTimeOriginal'):
+            return
         date = exif['DateTimeOriginal']
         if not date:
             return
