@@ -15,20 +15,26 @@ class ImageConverter:
 
     def convert(self, file_name):
         logging.info("show file: %s", file_name)
-        image = self.scaled_image(file_name)
         try:
             exif = self.read_exif(file_name)
-            logging.info('Orientation: %s', exif['Orientation'])
-            self.draw_date(image, exif)
         except AttributeError:
             exif = None
-            logging.error("cannot read create date: %s", file_name)
+            logging.error("cannot read exif %s", file_name)
+
+        image = Image.open(file_name)
+
+        if exif is not None:
+            image = self.rotate_if_needed(image, exif)
+
+        image = self.scale_image(image)
+
+        if exif is not None:
+            self.draw_date(image, exif)
+            # self.draw_orientation(image, exif)
 
         return image
 
-    def scaled_image(self, file_name):
-        image = Image.open(file_name)
-        logging.info("image size: %sx%s", image.size[0], image.size[1])
+    def scale_image(self, image):
         if image.size != self.DISPLAY_SIZE:
             image.thumbnail(self.DISPLAY_SIZE, Image.ANTIALIAS)
         if image.mode != 'L':
@@ -63,3 +69,27 @@ class ImageConverter:
         draw = ImageDraw.Draw(image)
         draw.rectangle((20, 0, 140, 35), "white")
         draw.text((30, 10), date, font=font, fill=0)
+
+    @staticmethod
+    def draw_orientation(image, exif):
+        date = exif['Orientation']
+        if not date:
+            return
+
+        date = "Orientation: " + str(date)
+        path_to_font = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'lib/Font.ttc')
+        font = ImageFont.truetype(path_to_font, 20)
+        draw = ImageDraw.Draw(image)
+        draw.rectangle((420, 0, 640, 35), "white")
+        draw.text((430, 10), date, font=font, fill=0)
+
+    @staticmethod
+    def rotate_if_needed(image, exif):
+        orientation = exif['Orientation']
+        if orientation == 3:
+            return image.rotate(180)
+        if orientation == 8:
+            return image.rotate(90)
+        if orientation == 6:
+            return image.rotate(270)
+        return image

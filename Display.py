@@ -15,7 +15,6 @@ class Display:
         try:
             display = AutoEPDDisplay(vcom=-1.84, rotate=None, spi_hz=24000000)
             epd = display.epd
-            logging.info('display size: %sx%s', epd.width, epd.height)
             display.clear()
             display.frame_buf.paste(0xFF, box=(0, 0, display.width, display.height))
             dims = (display.width, display.height)
